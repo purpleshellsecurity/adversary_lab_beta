@@ -56,7 +56,14 @@ The lab deploys across three Azure scopes both manual and programatically:
 <br>
 
 > [!CAUTION]
-> This lab can be deployed with the initially provisioned GA but it is recommended to create a user with the permissions above
+> This lab can be deployed with the initially provisioned GA but it is recommended to create a user with the permissions above. Use the script in the scripts section of the repo to create the user.
+
+<br>
+
+> [!NOTE]  
+> In a production enviroment you would create a service principal or managed identity that would run a CI/CD pipeline. This is done this way to make the lab more accessible. 
+
+<br>
 
 ### Network Requirements
 - Public IP address for RDP access (auto-detected if not specified)
