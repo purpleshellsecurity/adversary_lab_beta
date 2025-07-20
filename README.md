@@ -237,9 +237,12 @@ mstsc /v:<VM_PUBLIC_IP>
 
 ### 4. Verify Data Collection
 Wait 10-15 minutes, then check:
-- Sentinel data connectors are receiving data
-- Log Analytics workspace is populated
-- VM performance counters are flowing
+- Check the Log Analytics Workspace has data within the AzureActivity and Event Tables. Sample KQL provided below.
+
+<br>
+
+> [!IMPORTANT]  
+> Azure Activity Logs can be provisioned instantly or take up to an an hour to initial provision. It is dependent on the load of the service at the time of the request. 
 
 <br>
 
@@ -299,13 +302,6 @@ Event
 - Verify Azure Monitor Agent is installed and running
 - Check Data Collection Rule associations
 
-<br>
-
-> [!IMPORTANT]  
-> Azure Activity Logs can be provisioned instantly or take up to an an hour to initial provision. It is dependent on the load of the service at the time of the request. 
-
-
-<br>
 
 
 ## 💰 Cost Optimization
