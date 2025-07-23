@@ -14,7 +14,7 @@
 * text=auto
 
 # Binary files - don't modify line endings
-*.png binary
+#*.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
