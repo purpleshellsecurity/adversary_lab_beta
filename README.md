@@ -38,9 +38,8 @@ The lab deploys across three Azure scopes both manual and programatically:
 2. **Subscription Level**: Azure Activity logs and security monitoring
 3. **Tenant Level**: Entra ID audit and sign-in logs (manual configuration required)
 
-[Adversary Lab Log Diagram](./img/log.png)
-
-[Adversary Lab Architecture](./img/Arch.png)
+<br>
+![Adversary Lab Architecture](./img/Arch.png)
 <br>
 
 ## 📋 Prerequisites
