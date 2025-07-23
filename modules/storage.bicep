@@ -9,7 +9,7 @@ param namePrefix string
 param storageAccountSku string = 'Standard_LRS'
 
 // Variables
-var storageAccountName = '${toLower(namePrefix)}flowlogs${substring(uniqueString(resourceGroup().id), 0, 6)}'
+var storageAccountName = '${take(toLower(namePrefix), 10)}fl${substring(uniqueString(resourceGroup().id), 0, 8)}'
 
 // Storage Account for Flow Logs
 resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
