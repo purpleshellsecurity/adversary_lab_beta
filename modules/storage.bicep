@@ -8,9 +8,6 @@ param namePrefix string
 @description('Storage account SKU')
 param storageAccountSku string = 'Standard_LRS'
 
-@description('Storage account tier')
-param storageAccountTier string = 'Standard'
-
 // Variables
 var storageAccountName = '${toLower(namePrefix)}flowlogs${substring(uniqueString(resourceGroup().id), 0, 6)}'
 
@@ -20,7 +17,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   location: location
   sku: {
     name: storageAccountSku
-    tier: storageAccountTier
   }
   kind: 'StorageV2'
   properties: {

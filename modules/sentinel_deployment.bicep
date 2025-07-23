@@ -10,14 +10,14 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existin
 }
 
 // Sentinel Onboarding
-resource sentinelOnboarding 'Microsoft.SecurityInsights/onboardingStates@2025-06-01' = {
+resource sentinelOnboarding 'Microsoft.SecurityInsights/onboardingStates@2024-03-01' = {
   scope: workspace
   name: 'default'
   properties: {}
 }
 
 // Windows Security Events Solution
-resource windowsSecurityEvents 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = {
+resource windowsSecurityEvents 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-securityevents'
   properties: {
@@ -39,7 +39,7 @@ resource windowsSecurityEvents 'Microsoft.SecurityInsights/contentPackages@2025-
 }
 
 // Azure Activity Solution
-resource azureActivitySolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource azureActivitySolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-azureactivity'
   properties: {
@@ -61,7 +61,7 @@ resource azureActivitySolution 'Microsoft.SecurityInsights/contentPackages@2025-
 }
 
 // Microsoft Entra ID Solution
-resource entraIdSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource entraIdSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-azureactivedirectory'
   properties: {
@@ -83,7 +83,7 @@ resource entraIdSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01'
 }
 
 // Azure Storage Solution
-resource azureStorageSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource azureStorageSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-azurestorageaccount'
   properties: {
@@ -105,7 +105,7 @@ resource azureStorageSolution 'Microsoft.SecurityInsights/contentPackages@2025-0
 }
 
 // Azure Network Security Groups Solution
-resource networkSecurityGroupsSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource networkSecurityGroupsSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-networksecuritygroup'
   properties: {
@@ -127,7 +127,7 @@ resource networkSecurityGroupsSolution 'Microsoft.SecurityInsights/contentPackag
 }
 
 // Azure Resource Graph Solution
-resource azureResourceGraphSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource azureResourceGraphSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-resourcegraph'
   properties: {
@@ -149,7 +149,7 @@ resource azureResourceGraphSolution 'Microsoft.SecurityInsights/contentPackages@
 }
 
 // Azure Security Benchmark Solution
-resource azureSecurityBenchmarkSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource azureSecurityBenchmarkSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-azuresecuritybenchmark'
   properties: {
@@ -171,7 +171,7 @@ resource azureSecurityBenchmarkSolution 'Microsoft.SecurityInsights/contentPacka
 }
 
 // Azure Logic Apps Solution
-resource azureLogicAppsSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource azureLogicAppsSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-logicapps'
   properties: {
@@ -193,7 +193,7 @@ resource azureLogicAppsSolution 'Microsoft.SecurityInsights/contentPackages@2025
 }
 
 // Azure Key Vault Solution
-resource azureKeyVaultSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource azureKeyVaultSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-azurekeyvault'
   properties: {
@@ -215,7 +215,7 @@ resource azureKeyVaultSolution 'Microsoft.SecurityInsights/contentPackages@2025-
 }
 
 // DNS Essentials Solution
-resource dnsEssentialsSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource dnsEssentialsSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-dns-domain'
   properties: {
@@ -237,7 +237,7 @@ resource dnsEssentialsSolution 'Microsoft.SecurityInsights/contentPackages@2025-
 }
 
 // Azure Firewall Solution
-resource azureFirewallSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource azureFirewallSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'sentinel4azurefirewall.sentinel4azurefirewall'
   properties: {
@@ -259,7 +259,7 @@ resource azureFirewallSolution 'Microsoft.SecurityInsights/contentPackages@2025-
 }
 
 // Windows Firewall Solution
-resource windowsFirewallSolution 'Microsoft.SecurityInsights/contentPackages@2025-06-01' = if (enableAdvancedSolutions) {
+resource windowsFirewallSolution 'Microsoft.SecurityInsights/contentPackages@2024-03-01' = if (enableAdvancedSolutions) {
   scope: workspace
   name: 'azuresentinel.azure-sentinel-solution-windowsfirewall'
   properties: {
