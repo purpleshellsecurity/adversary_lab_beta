@@ -59,6 +59,15 @@ module networking 'modules/networking.bicep' = {
   }
 }
 
+// Deploy storage account for flow logs
+module storage 'modules/storage.bicep' = {
+  name: 'storage-deployment-${resourceSuffix}'
+  params: {
+    location: location
+    namePrefix: uniqueNamePrefix
+  }
+}
+
 // Deploy the VM with AMA
 module vm 'modules/vm_ama.bicep' = {
   name: 'vm-deployment-${resourceSuffix}'
@@ -150,7 +159,11 @@ output workspaceId string = logAnalytics.outputs.workspaceId
 output workspaceResourceId string = logAnalytics.outputs.workspaceResourceId
 output dcrId string = dataCollection.outputs.dcrId
 
-// Resource Group Info (needed for subscription deployment)
+// Storage Outputs
+output storageAccountName string = storage.outputs.storageAccountName
+output storageAccountResourceId string = storage.outputs.storageAccountResourceId
+
+// Resource Group Info
 output resourceGroupName string = resourceGroup().name
 
 // Helpful URLs

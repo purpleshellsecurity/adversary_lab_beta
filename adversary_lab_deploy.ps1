@@ -1,19 +1,21 @@
 <#
 .SYNOPSIS
-    Deploys an Azure logging lab solution with VM, Log Analytics workspace, and optional auto-shutdown features.
+    Deploys an Azure logging lab solution with VM, Log Analytics workspace, storage for flow logs, and optional auto-shutdown features.
 
 .DESCRIPTION
     The Adversary Lab Deployer orchestrates the deployment of a comprehensive logging lab solution across Resource Group and Subscription levels. 
-    It deploys Bicep templates in the correct order: Infrastructure, Log Analytics workspace, and Activity logs.
+    It deploys Bicep templates in the correct order: Infrastructure, Log Analytics workspace, Storage for flow logs, and Activity logs.
     
     The script creates a complete lab environment including:
     - Virtual Machine with specified configuration
     - Log Analytics workspace with configurable retention
+    - Storage account ready for VNET flow logs
     - Network security groups and virtual networks
     - Optional auto-shutdown scheduling with email notifications
     - Azure Activity log integration
     
     Entra ID logs must be deployed manually due to elevated permissions required.
+    VNET flow logs can be configured manually in Azure portal using the created storage account.
 
 .PARAMETER ResourceGroupName
     Name of the resource group to deploy to. This resource group will contain all the lab resources.
@@ -70,22 +72,22 @@
     Valid range is 5-120 minutes.
 
 .EXAMPLE
-    .\Deploy-LoggingLab-Enhanced.ps1
+    .\adversary_lab_deploy.ps1
     
     Interactive deployment - will prompt for required parameters and use defaults for optional ones.
 
 .EXAMPLE
-    .\Deploy-LoggingLab-Enhanced.ps1 -ResourceGroupName "rg-logging-lab" -Location "East US" -SubscriptionId "12345678-1234-1234-1234-123456789012" -AdminUsername "labadmin"
+    .\adversary_lab_deploy.ps1 -ResourceGroupName "rg-logging-lab" -Location "East US" -SubscriptionId "12345678-1234-1234-1234-123456789012" -AdminUsername "labadmin"
     
     Basic deployment with required parameters. Will prompt securely for password and use defaults for optional parameters.
 
 .EXAMPLE
-    .\Deploy-LoggingLab-Enhanced.ps1 -ResourceGroupName "rg-logging-lab" -Location "East US" -SubscriptionId "12345678-1234-1234-1234-123456789012" -AdminUsername "labadmin" -ShutdownTime "1900" -EnableShutdownNotificationEmails $true -NotificationEmail "admin@company.com"
+    .\adversary_lab_deploy.ps1 -ResourceGroupName "rg-logging-lab" -Location "East US" -SubscriptionId "12345678-1234-1234-1234-123456789012" -AdminUsername "labadmin" -ShutdownTime "1900" -EnableShutdownNotificationEmails $true -NotificationEmail "admin@company.com"
     
     Deployment with custom shutdown time (7:00 PM) and email notifications enabled.
 
 .EXAMPLE
-    .\Deploy-LoggingLab-Enhanced.ps1 -ResourceGroupName "rg-logging-lab" -Location "West US 2" -SubscriptionId "12345678-1234-1234-1234-123456789012" -AdminUsername "labadmin" -VmSize "Standard_D4s_v3" -RetentionInDays 90 -NamePrefix "mylab"
+    .\adversary_lab_deploy.ps1 -ResourceGroupName "rg-logging-lab" -Location "West US 2" -SubscriptionId "12345678-1234-1234-1234-123456789012" -AdminUsername "labadmin" -VmSize "Standard_D4s_v3" -RetentionInDays 90 -NamePrefix "mylab"
     
     Deployment with larger VM size, extended log retention, and custom naming prefix.
 
@@ -98,7 +100,7 @@
 
 .NOTES
     Author: Adversary Lab Team
-    Version: 2.0
+    Version: 2.1
     Requires: PowerShell 7 or later, Azure PowerShell module (Az)
      
     Prerequisites:
@@ -109,6 +111,7 @@
     
     Important:
     - Entra ID logs must be deployed manually due to elevated permissions required
+    - VNET flow logs can be configured manually in Azure portal using the created storage account
     - Script will auto-detect your public IP if MyIP parameter is not provided
     - Use confirmation prompts to preview deployment before creating resources
     - Auto-shutdown is highly recommended for lab environments to control costs
@@ -589,7 +592,7 @@ function Start-LoggingLabDeployment {
         }
         
         if ($true) {
-            Write-ColoredOutput "Deploying infrastructure and Log Analytics workspace..." "Yellow"
+            Write-ColoredOutput "Deploying infrastructure, storage, and Log Analytics workspace..." "Yellow"
             $rgResult = New-AzResourceGroupDeployment @rgDeploymentParams
             
             # Extract outputs from resource group deployment
@@ -597,10 +600,12 @@ function Start-LoggingLabDeployment {
             $WorkspaceResourceId = $rgResult.Outputs.workspaceResourceId.Value
             $VmPublicIP = $rgResult.Outputs.vmPublicIP.Value
             $SentinelUrl = $rgResult.Outputs.sentinelUrl.Value
+            $StorageAccountName = $rgResult.Outputs.storageAccountName.Value
             
             Write-ColoredOutput "✓ Resource Group deployment completed successfully!" "Green"
             Write-ColoredOutput "  Workspace Name: $WorkspaceName" "White"
             Write-ColoredOutput "  VM Public IP: $VmPublicIP" "White"
+            Write-ColoredOutput "  Storage Account: $StorageAccountName" "White"
             
             # ===== PHASE 2: Subscription Level Deployment =====
             Write-ColoredOutput "`n=== Phase 2: Subscription Level Deployment ===" "Cyan"
@@ -628,6 +633,7 @@ function Start-LoggingLabDeployment {
             Write-ColoredOutput "Resource Group: $($script:ResourceGroupName)" "White"
             Write-ColoredOutput "Subscription: $($script:SubscriptionId)" "White"
             Write-ColoredOutput "Workspace: $WorkspaceName" "White"
+            Write-ColoredOutput "Storage Account: $StorageAccountName (ready for VNET flow logs)" "White"
             
             # Display connection information
             Write-ColoredOutput "`n=== Connection Information ===" "Yellow"
@@ -646,13 +652,23 @@ function Start-LoggingLabDeployment {
             Write-ColoredOutput "   - Workspace: $WorkspaceName" "Gray"
             Write-ColoredOutput "   - Resource ID: $WorkspaceResourceId" "Gray"
             
+            Write-ColoredOutput "`n🔧 VNET Flow Logs Setup:" "Yellow"
+            Write-ColoredOutput "A storage account has been created and is ready for VNET flow logs:" "White"
+            Write-ColoredOutput "1. Navigate to Azure Portal > Network Watcher > Flow logs" "White"
+            Write-ColoredOutput "2. Create a new VNET flow log with the following configuration:" "White"
+            Write-ColoredOutput "   - Target: Your Virtual Network" "Gray"
+            Write-ColoredOutput "   - Storage Account: $StorageAccountName" "Gray"
+            Write-ColoredOutput "   - Log Analytics: $WorkspaceName (optional for Traffic Analytics)" "Gray"
+            Write-ColoredOutput "   - Format: JSON Version 2" "Gray"
+            
             Write-ColoredOutput "`n=== Next Steps ===" "Yellow"
             Write-ColoredOutput "1. Complete the manual Entra ID logs setup above" "White"
-            Write-ColoredOutput "2. Wait 10-15 minutes for data connectors to initialize" "White"
-            Write-ColoredOutput "3. Access Microsoft Sentinel in the Azure portal" "White"
-            Write-ColoredOutput "4. Verify data connectors are receiving data" "White"
-            Write-ColoredOutput "5. Connect to the VM using RDP for testing" "White"
-            Write-ColoredOutput "6. Admin Username: $($script:AdminUsername)" "White"
+            Write-ColoredOutput "2. Optionally configure VNET flow logs using the created storage account" "White"
+            Write-ColoredOutput "3. Wait 10-15 minutes for data connectors to initialize" "White"
+            Write-ColoredOutput "4. Access Microsoft Sentinel in the Azure portal" "White"
+            Write-ColoredOutput "5. Verify data connectors are receiving data" "White"
+            Write-ColoredOutput "6. Connect to the VM using RDP for testing" "White"
+            Write-ColoredOutput "7. Admin Username: $($script:AdminUsername)" "White"
             
             Write-ColoredOutput "`n=== Deployment Details ===" "Gray"
             Write-ColoredOutput "Resource Group Deployment: $($rgResult.DeploymentName)" "Gray"
@@ -682,8 +698,11 @@ catch {
     Write-ColoredOutput "3. Verify your Bicep template files are in the same directory as this script" "White"
     Write-ColoredOutput "4. Use -ForceLogin parameter if you need to re-authenticate" "White"
     Write-ColoredOutput "5. For Entra ID logs, configure manually in Azure Portal as shown in the summary" "White"
+    Write-ColoredOutput "6. For VNET flow logs, use the created storage account and configure manually" "White"
     exit 1
 }
 
 Write-ColoredOutput "`n🎉 Deployment orchestration completed successfully!" "Green"
-Write-ColoredOutput "Remember to manually configure Entra ID diagnostic settings as outlined above." "Yellow"
+Write-ColoredOutput "Remember to manually configure:" "Yellow"
+Write-ColoredOutput "  - Entra ID diagnostic settings as outlined above" "White"
+Write-ColoredOutput "  - VNET flow logs using the created storage account (optional)" "White"

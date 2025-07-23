@@ -40,6 +40,7 @@ The lab deploys across three Azure scopes both manual and programatically:
 
 [Adversary Lab Log Diagram](./img/log.png)
 
+[Adversary Lab Architecture](./img/Arch.png)
 <br>
 
 ## 📋 Prerequisites
