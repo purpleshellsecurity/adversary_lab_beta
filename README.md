@@ -16,6 +16,11 @@ adversary-lab/
     ├── log_analytics.bicep             # Log Analytics workspace
     ├── sentinel_deployment.bicep       # Microsoft Sentinel configuration
     └── vm_data_collection.bicep        # Data collection rules (includes Sysmon)
+└── scripts/
+    ├── create_user.ps1                 # Creates adversary_lab_deployer user
+    ├── deploy_atomic_red_team.ps1      # Deploys atomic red team
+    ├── deploy_stratus_red_team.ps1     # Deploys Stratus red team
+    └──deploy_sysmon.ps1                # Deploys Sysmon monitoring feature
 ```
 
 The Adversary Lab provides a complete security monitoring environment that includes:
@@ -198,6 +203,30 @@ Due to elevated permissions required, configure Entra ID logs manually:
    - **Workspace**: Select your deployed workspace
 
 
+### 2. Enable Flow Logs
+
+```powershell
+$rg = "adversary_lab_rg_name"
+$vnet_name="adversary_lab_vnet_name"
+$wk="adversary_lab_net_insights"
+$storage_acc_name="flow_log_storage_account_name"
+$location_name="Locationofresources"
+$vnet_flow_log_name="adversary_lab_flow_log"
+
+# Place the virtual network configuration into a variable.
+$vnet = Get-AzVirtualNetwork -Name $vnet_name -ResourceGroupName $rg
+
+# Place the storage account configuration into a variable.
+$storageAccount = Get-AzStorageAccount -Name 'myStorageAccount' -ResourceGroupName 'myResourceGroup'
+
+# Create a traffic analytics workspace and place its configuration into a variable.
+$workspace = New-AzOperationalInsightsWorkspace -Name $storage_acc_name -ResourceGroupName $rg -Location $location_name
+
+# Create a VNet flow log. This assumes it was deployed in eastus.
+New-AzNetworkWatcherFlowLog -Enabled $true -Name $vnet_flow_log_name -NetworkWatcherName 'NetworkWatcher_eastus' -ResourceGroupName 'NetworkWatcherRG' -StorageId $storageAccount.Id -TargetResourceId $vnet.Id -FormatVersion 2 -EnableTrafficAnalytics -TrafficAnalyticsWorkspaceId $workspace.ResourceId -TrafficAnalyticsInterval 10
+```
+
+
 ### 2. Connect to VM
 Use the provided RDP command:
 ```bash
@@ -277,6 +306,9 @@ Event
 Event
 | where Source == "Microsoft-Windows-Sysmon"
 | where TimeGenerated > ago(24h)
+
+
+// Verify Flow logs
 ```
 <br>
 
