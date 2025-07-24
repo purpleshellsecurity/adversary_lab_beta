@@ -79,3 +79,5 @@ output publicIpAddress string = pip.properties.ipAddress
 output vnetId string = vnet.id
 output nsgId string = nsg.id
 output vnetResourceId string = vnet.id
+output vnetName string = vnet.name
+

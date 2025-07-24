@@ -80,28 +80,21 @@ The lab deploys across three Azure scopes both manual and programatically:
 
 ## 🚀 Quick Start 
 
-### 1. Clone or Download Files from PS as Adminstrator
+
+### 1. Open a Powershell Prompt as Administrator and Install VS Code and Git
+```powershell
+PS C:\Users\<currentuser> winget install code
+PS C:\Users\<currentuser> winget install Git.Git
+```
+
+### 2. Open VS Code Terminal Clone the Repo
 
 ```powershell
-PS C:\Users\<currentuser> winget install Git.Git
-
-PS git clone https://github.com/purpleshellsecurity/adversary_lab.git
-```
-
-<br>
-
-Ensure all Bicep templates and PowerShell script are in the same directory:
-```
-azure-logging-lab/
-├── adversary_lab_deploy.ps1
-├── main.bicep
-├── main_subscription.bicep
-└── modules/
-    ├── log_analytics.bicep
-    ├── networking.bicep
-    ├── sentinel_deployment.bicep
-    ├── vm_ama.bicep
-    └── vm_data_collection.bicep
+code
+#VSCode opens
+Ctrl+`
+PS C:\Users\<currentuser>git clone https://github.com/purpleshellsecurity/adversary_lab.git
+PS C:\Users\<currentusers> cd adversary_lab
 ```
 
 <br>
@@ -111,7 +104,7 @@ azure-logging-lab/
 
 <br>
 
-### 2. Basic Deployment
+### 3. Basic Deployment
 ```powershell
 .\adversary_lab_deploy.ps1
 ```
@@ -122,21 +115,10 @@ azure-logging-lab/
 
 <br>
 
-### 3. Advanced Deployment (Command Line)
-```powershell
-.\adversary_lab_deploy.ps1 `
-    -ResourceGroupName "rg-security-lab" `
-    -Location "East US" `
-    -SubscriptionId "your-subscription-id" `
-    -AdminUsername "secadmin" `
-    -VmSize "Standard_D4s_v3" `
-    -NotificationEmail "admin@company.com"
-```
-<br>
 
 ## ⚙️ Configuration Reference
 
-### Parameter Reference Table
+### Parameter Reference Table (Advanced Usage)
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -145,7 +127,7 @@ azure-logging-lab/
 | `SubscriptionId` | String | 🔄 | *interactive* | Target Azure subscription ID (GUID format) |
 | `AdminUsername` | String | 🔄 | *interactive* | VM administrator username |
 | `MyIP` | String | ❌ | Auto-detected | Your public IP for RDP access |
-| `NamePrefix` | String | ❌ | "adversarylabcom" | Prefix for all resource names |
+| `NamePrefix` | String | ❌ | "adversarylab" | Prefix for all resource names |
 | `VmSize` | String | ❌ | "Standard_D2s_v3" | Azure VM size |
 | `RetentionInDays` | Integer | ❌ | 30 | Log Analytics retention period (7-730 days) |
 | `EnableAzureActivity` | Boolean | ❌ | true | Enable Azure Activity logs collection |
@@ -207,34 +189,52 @@ Due to elevated permissions required, configure Entra ID logs manually:
 2. Click **Add diagnostic setting**
 3. Configure:
    - **Name**: `EntraID-AuditLogs`
-   - **Logs**: Check `AuditLogs` and `SignInLogs`
+   - **Logs**: Check `AuditLogs` and `SignInLogs` `MicrosoftGraphActivityLogs` as starters (Link to Azure Monitor reference below)
    - **Destination**: Send to Log Analytics workspace
    - **Workspace**: Select your deployed workspace
 
+[Microsoft Graph Activity Logs](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/microsoftgraphactivitylogs)
 
-### 2. Enable Flow Logs
+
+### 2. Enable Flow Logs - Powershell
 
 ```powershell
+#Input with your deployed resource names
 $rg = "adversary_lab_rg_name"
 $vnet_name="adversary_lab_vnet_name"
 $wk="adversary_lab_net_insights"
 $storage_acc_name="flow_log_storage_account_name"
 $location_name="Locationofresources"
-$vnet_flow_log_name="adversary_lab_flow_log"
+$vnet_flow_log_name="adversary_lab_fl"
+$storageAccount_id="subscriptions/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/resourceGroups/adversary_lab_rg_name/providers/Microsoft.Storage/storageAccounts/flow_log_storage_accout_name"
+$vnet_id="/subscriptions/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/resourceGroups/adversary_lab_rg/providers/Microsoft.Network/virtualNetworks/adversarylab-vnet"
+$workspace_id="/subscriptions/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/resourceGroups/adversary_lab_rg/providers/Microsoft.OperationalInsights/workspaces/adversarylab-law"
+
 
 # Place the virtual network configuration into a variable.
 $vnet = Get-AzVirtualNetwork -Name $vnet_name -ResourceGroupName $rg
 
 # Place the storage account configuration into a variable.
-$storageAccount = Get-AzStorageAccount -Name 'myStorageAccount' -ResourceGroupName 'myResourceGroup'
+$storageAccount = Get-AzStorageAccount -Name $storage_acc_name -ResourceGroupName $rg
 
 # Create a traffic analytics workspace and place its configuration into a variable.
 $workspace = New-AzOperationalInsightsWorkspace -Name $storage_acc_name -ResourceGroupName $rg -Location $location_name
 
 # Create a VNet flow log. This assumes it was deployed in eastus.
-New-AzNetworkWatcherFlowLog -Enabled $true -Name $vnet_flow_log_name -NetworkWatcherName 'NetworkWatcher_eastus' -ResourceGroupName 'NetworkWatcherRG' -StorageId $storageAccount.Id -TargetResourceId $vnet.Id -FormatVersion 2 -EnableTrafficAnalytics -TrafficAnalyticsWorkspaceId $workspace.ResourceId -TrafficAnalyticsInterval 10
+New-AzNetworkWatcherFlowLog -Enabled $true -Name $vnet_flow_log_name -NetworkWatcherName 'NetworkWatcher_eastus' -ResourceGroupName 'NetworkWatcherRG' -StorageId $storageAccount_id -TargetResourceId $vnet_id -FormatVersion 2 -EnableTrafficAnalytics $true -TrafficAnalyticsWorkspaceId $workspace_id -TrafficAnalyticsInterval 10
 ```
 
+### Enable Flow Logs - Azure Portal
+
+``` bash
+   A storage account has been created and is ready for VNET flow logs:
+   1. Navigate to Azure Portal > Network Watcher > Flow logs
+   2. Create a new VNET flow log with the following configuration:
+       - Target: Your Virtual Network" "Gray"
+       - Storage Account: $StorageAccountName" "Gray"
+       - Log Analytics: $WorkspaceName (optional for Traffic Analytics)"
+       - Format: JSON Version 2" "Gray"
+ ```
 
 ### 2. Connect to VM
 Use the provided RDP command:
@@ -277,7 +277,7 @@ mstsc /v:<VM_PUBLIC_IP>
 
 ### 4. Verify Data Collection
 Wait 10-15 minutes, then check:
-- Check the Log Analytics Workspace has data within the AzureActivity and Event Tables. Sample KQL provided below.
+- Check the Log Analytics Workspace has data within the AzureActivity, Event Tables, Flow Logs, and more. Sample KQL provided below.
 
 <br>
 
@@ -285,17 +285,6 @@ Wait 10-15 minutes, then check:
 > Azure Activity Logs can be provisioned instantly or take up to an an hour to initial provision. It is dependent on the load of the service at the time of the request. 
 
 <br>
-
-## 📖 Usage Examples
-
-### Attack Simulation Scenarios
-The lab supports various security testing scenarios:
-
-1. **Credential Attacks**: Test password spraying, brute force
-2. **Privilege Escalation**: Simulate local privilege escalation
-3. **Lateral Movement**: Network discovery and movement simulation
-4. **Data Exfiltration**: File transfer and data staging
-5. **Persistence**: Registry modifications, scheduled tasks
 
 ### KQL Query Examples
 Monitor activities with these sample queries:
@@ -318,7 +307,20 @@ Event
 
 
 // Verify Flow logs
+NTANetAnalytics
+| where TimeGenerated > ago (6h)
+
 ```
+<br>
+
+### Attack Simulation Scenarios
+The lab supports various security testing scenarios:
+
+1. **Credential Attacks**: Test password spraying, brute force
+2. **Privilege Escalation**: Simulate local privilege escalation
+3. **Lateral Movement**: Network discovery and movement simulation
+4. **Data Exfiltration**: File transfer and data staging
+5. **Persistence**: Registry modifications, scheduled tasks
 <br>
 
 ## 🛠️ Troubleshooting

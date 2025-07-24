@@ -11,7 +11,7 @@ param adminUsername string
 param adminPassword string
 
 @description('Base name prefix for resources')
-param namePrefix string = 'adversarylabcom'
+param namePrefix string = 'adversarylab'
 
 @description('VM size')
 param vmSize string = 'Standard_D2s_v3'
@@ -172,3 +172,9 @@ output vmConnectCommand string = 'mstsc /v:${networking.outputs.publicIpAddress}
 
 // Cost Management Output
 output budgetCreated bool = !empty(notificationEmail)
+
+
+// Networking Outputs
+output vnetId string = networking.outputs.vnetId
+output vnetResourceId string = networking.outputs.vnetResourceId
+output vnetName string = networking.outputs.vnetName

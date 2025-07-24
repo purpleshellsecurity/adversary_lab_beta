@@ -34,7 +34,7 @@
     Your public IP address for RDP access. If not provided, the script will auto-detect your current public IP address.
 
 .PARAMETER NamePrefix
-    Prefix for resource names. Default is "adversarylabcom". All resources will be prefixed with this value.
+    Prefix for resource names. Default is "adversarylab". All resources will be prefixed with this value.
 
 .PARAMETER VmSize
     Size of the VM to deploy. Default is "Standard_D2s_v3". Choose based on your performance and cost requirements.
@@ -170,9 +170,9 @@ param(
     
     [Parameter(
         Mandatory = $false,
-        HelpMessage = "Enter prefix for resource names (default: adversarylabcom - matches Bicep)"
+        HelpMessage = "Enter prefix for resource names (default: adversarylab - matches Bicep)"
     )]
-    [string]$NamePrefix = "adversarylabcom",
+    [string]$NamePrefix = "adversarylab",
     
     [Parameter(
         Mandatory = $false,
