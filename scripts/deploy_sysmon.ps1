@@ -120,7 +120,7 @@ function Get-SysmonStatus {
 }
 
 function Download-Sysmon {
-    Write-StatusMessage "📥 Downloading Sysmon..." 'Yellow'
+    Write-StatusMessage "[DOWNLOAD] Downloading Sysmon..." 'Yellow'
     Write-DebugMessage "Starting Sysmon download process"
     
     $tempZip = "$env:TEMP\Sysmon_$(Get-Date -Format 'yyyyMMdd_HHmmss').zip"
@@ -166,11 +166,12 @@ function Download-Sysmon {
         Write-DebugMessage "Download completed. File size: $fileSize bytes"
         
         if ($fileSize -lt 1000) {
-            throw "Downloaded file is too small ($fileSize bytes) - likely corrupted"
+            $fileSizeStr = $fileSize.ToString()
+            throw "Downloaded file is too small ($fileSizeStr bytes) - likely corrupted"
         }
         
         # Extract
-        Write-StatusMessage "📦 Extracting Sysmon..." 'Yellow'
+        Write-StatusMessage "[EXTRACT] Extracting Sysmon..." 'Yellow'
         Write-DebugMessage "Extracting to: $tempExtract"
         
         if (Test-Path $tempExtract) {
@@ -190,7 +191,7 @@ function Download-Sysmon {
         Write-DebugMessage "Found Sysmon executable at: $sysmonExePath"
         
         # Copy to system directory
-        Write-StatusMessage "📁 Installing to system directory..." 'Yellow'
+        Write-StatusMessage "[INSTALL] Installing to system directory..." 'Yellow'
         Write-DebugMessage "Copying from $sysmonExePath to $SysmonPath"
         
         Copy-Item -Path $sysmonExePath -Destination $SysmonPath -Force
@@ -203,11 +204,11 @@ function Download-Sysmon {
         $copiedSize = (Get-Item $SysmonPath).Length
         Write-DebugMessage "Sysmon copied successfully. Size: $copiedSize bytes"
         
-        Write-StatusMessage "✅ Sysmon downloaded and extracted successfully" 'Green'
+        Write-StatusMessage "[SUCCESS] Sysmon downloaded and extracted successfully" 'Green'
         return $true
         
     } catch {
-        Write-StatusMessage "❌ Failed to download Sysmon: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to download Sysmon: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Download error details: $($_.Exception | Format-List * | Out-String)"
         return $false
     } finally {
@@ -225,11 +226,11 @@ function Download-Sysmon {
 
 function Download-SysmonConfig {
     if ($UseDefaultConfig) {
-        Write-StatusMessage "⚙️ Using default Sysmon configuration" 'Yellow'
+        Write-StatusMessage "[CONFIG] Using default Sysmon configuration" 'Yellow'
         return $null
     }
     
-    Write-StatusMessage "📥 Downloading Sysmon configuration..." 'Yellow'
+    Write-StatusMessage "[DOWNLOAD] Downloading Sysmon configuration..." 'Yellow'
     Write-DebugMessage "Downloading config from: $ConfigUrl"
     
     try {
@@ -255,7 +256,7 @@ function Download-SysmonConfig {
             try {
                 $xml = [xml](Get-Content $SysmonConfigPath)
                 if ($xml.Sysmon) {
-                    Write-StatusMessage "✅ Sysmon configuration downloaded and validated" 'Green'
+                    Write-StatusMessage "[SUCCESS] Sysmon configuration downloaded and validated" 'Green'
                     return $SysmonConfigPath
                 } else {
                     Write-Warning "Downloaded config doesn't appear to be valid Sysmon configuration"
@@ -287,14 +288,14 @@ function Download-SysmonConfig {
 function Install-SysmonService {
     param([string]$ConfigPath = $null)
     
-    Write-StatusMessage "🔧 Installing Sysmon service..." 'Yellow'
+    Write-StatusMessage "[INSTALL] Installing Sysmon service..." 'Yellow'
     Write-DebugMessage "Installing Sysmon service with config: $ConfigPath"
     
     try {
         # Check if we need to uninstall first (for -Force scenarios)
         $existingService = Get-Service -Name 'Sysmon*' -ErrorAction SilentlyContinue
         if ($existingService) {
-            Write-StatusMessage "⚠️ Existing Sysmon service found. Uninstalling first..." 'Yellow'
+            Write-StatusMessage "[WARNING] Existing Sysmon service found. Uninstalling first..." 'Yellow'
             Write-DebugMessage "Uninstalling existing Sysmon service: $($existingService.Name)"
             
             # Uninstall existing Sysmon
@@ -314,7 +315,7 @@ function Install-SysmonService {
             }
             
             # Wait for uninstall to complete
-            Write-StatusMessage "⏳ Waiting for uninstall to complete..." 'Yellow'
+            Write-StatusMessage "[WAIT] Waiting for uninstall to complete..." 'Yellow'
             Start-Sleep -Seconds 3
             
             # Verify uninstall
@@ -322,7 +323,7 @@ function Install-SysmonService {
             if ($checkService) {
                 Write-Warning "Sysmon service still exists after uninstall attempt. Proceeding anyway."
             } else {
-                Write-StatusMessage "✅ Existing Sysmon uninstalled successfully" 'Green'
+                Write-StatusMessage "[SUCCESS] Existing Sysmon uninstalled successfully" 'Green'
             }
         }
         
@@ -358,16 +359,16 @@ function Install-SysmonService {
         if ($process.ExitCode -eq 1242) {
             Write-Warning "Sysmon reported it's already installed (exit code 1242). This might be expected during force reinstall."
             # Don't throw an error for 1242 if we're doing a force reinstall
-            Write-StatusMessage "🔄 Attempting to proceed with existing installation..." 'Yellow'
+            Write-StatusMessage "[CONTINUE] Attempting to proceed with existing installation..." 'Yellow'
         } elseif ($process.ExitCode -ne 0) {
             throw "Sysmon installation failed with exit code: $($process.ExitCode)"
         }
         
-        Write-StatusMessage "✅ Sysmon service installation completed" 'Green'
+        Write-StatusMessage "[SUCCESS] Sysmon service installation completed" 'Green'
         return $true
         
     } catch {
-        Write-StatusMessage "❌ Failed to install Sysmon service: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to install Sysmon service: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Service installation error: $($_.Exception | Format-List * | Out-String)"
         return $false
     } finally {
@@ -381,7 +382,7 @@ function Install-SysmonService {
 }
 
 function Test-SysmonInstallation {
-    Write-StatusMessage "🔍 Verifying Sysmon installation..." 'Yellow'
+    Write-StatusMessage "[VERIFY] Verifying Sysmon installation..." 'Yellow'
     
     $maxRetries = 5
     $retryDelay = 2
@@ -392,7 +393,7 @@ function Test-SysmonInstallation {
         $status = Get-SysmonStatus
         
         if ($status.Running) {
-            Write-StatusMessage "✅ Sysmon is running successfully!" 'Green'
+            Write-StatusMessage "[SUCCESS] Sysmon is running successfully!" 'Green'
             Write-StatusMessage "   Service: $($status.ServiceName)" 'Gray'
             Write-StatusMessage "   Status: $($status.ServiceStatus)" 'Gray'
             Write-StatusMessage "   Log Accessible: $($status.LogAccessible)" 'Gray'
@@ -417,7 +418,7 @@ function Test-SysmonInstallation {
             
             return $true
         } elseif ($status.Installed) {
-            Write-StatusMessage "⚠️ Sysmon service exists but is not running. Attempting to start..." 'Yellow'
+            Write-StatusMessage "[WARNING] Sysmon service exists but is not running. Attempting to start..." 'Yellow'
             
             try {
                 Start-Service -Name $status.ServiceName -ErrorAction Stop
@@ -426,14 +427,14 @@ function Test-SysmonInstallation {
             } catch {
                 Write-DebugMessage "Failed to start service: $($_.Exception.Message)"
                 if ($i -eq $maxRetries) {
-                    Write-StatusMessage "❌ Could not start Sysmon service: $($_.Exception.Message)" 'Red'
+                    Write-StatusMessage "[ERROR] Could not start Sysmon service: $($_.Exception.Message)" 'Red'
                     return $false
                 }
             }
         } else {
             Write-DebugMessage "Sysmon not installed or not found"
             if ($i -eq $maxRetries) {
-                Write-StatusMessage "❌ Sysmon installation verification failed" 'Red'
+                Write-StatusMessage "[ERROR] Sysmon installation verification failed" 'Red'
                 return $false
             }
         }
@@ -449,19 +450,19 @@ function Test-SysmonInstallation {
 
 function Show-SysmonInfo {
     Write-Host "`n" -NoNewline
-    Write-Host "🔍 Sysmon Information" -ForegroundColor Cyan
-    Write-Host "===================" -ForegroundColor Cyan
+    Write-Host "=== Sysmon Information ===" -ForegroundColor Cyan
+    Write-Host "=========================" -ForegroundColor Cyan
     
     try {
         $status = Get-SysmonStatus
         
         Write-Host "Installation Status: " -NoNewline
         if ($status.Running) {
-            Write-Host "✅ Running" -ForegroundColor Green
+            Write-Host "[RUNNING]" -ForegroundColor Green
         } elseif ($status.Installed) {
-            Write-Host "⚠️ Installed but not running" -ForegroundColor Yellow
+            Write-Host "[INSTALLED BUT NOT RUNNING]" -ForegroundColor Yellow
         } else {
-            Write-Host "❌ Not installed" -ForegroundColor Red
+            Write-Host "[NOT INSTALLED]" -ForegroundColor Red
         }
         
         Write-Host "Service Name: $($status.ServiceName)" -ForegroundColor Gray
@@ -520,34 +521,34 @@ function Show-SysmonInfo {
 
 # Main execution
 try {
-    Write-Host "🔬 Sysmon Standalone Installer" -ForegroundColor Cyan
-    Write-Host "================================" -ForegroundColor Cyan
+    Write-Host "=== Sysmon Standalone Installer ===" -ForegroundColor Cyan
+    Write-Host "===================================" -ForegroundColor Cyan
     
     if ($ShowDetails) {
-        Write-Host "🐛 Detailed logging enabled" -ForegroundColor Magenta
+        Write-Host "[DEBUG] Detailed logging enabled" -ForegroundColor Magenta
     }
     
     # Check prerequisites
-    Write-StatusMessage "`n🔍 Checking prerequisites..." 'Yellow'
+    Write-StatusMessage "`n[CHECK] Checking prerequisites..." 'Yellow'
     
     if (-not (Test-Administrator)) {
         throw "This script requires Administrator privileges. Please run as Administrator."
     }
-    Write-StatusMessage "✅ Administrator privileges confirmed" 'Green'
+    Write-StatusMessage "[SUCCESS] Administrator privileges confirmed" 'Green'
     
     if (-not (Test-InternetConnectivity)) {
         throw "Internet connectivity is required to download Sysmon."
     }
-    Write-StatusMessage "✅ Internet connectivity confirmed" 'Green'
+    Write-StatusMessage "[SUCCESS] Internet connectivity confirmed" 'Green'
     
     # Check current status
-    Write-StatusMessage "`n📊 Checking current Sysmon status..." 'Yellow'
+    Write-StatusMessage "`n[STATUS] Checking current Sysmon status..." 'Yellow'
     $currentStatus = Get-SysmonStatus
     
     Write-DebugMessage "Current status: Installed=$($currentStatus.Installed), Running=$($currentStatus.Running)"
     
     if ($currentStatus.Running -and -not $Force) {
-        Write-StatusMessage "✅ Sysmon is already installed and running!" 'Green'
+        Write-StatusMessage "[SUCCESS] Sysmon is already installed and running!" 'Green'
         try {
             Show-SysmonInfo
         } catch {
@@ -557,18 +558,18 @@ try {
         Write-StatusMessage "Installation complete - Sysmon is ready to use!" 'Green'
         exit 0
     } elseif ($currentStatus.Running -and $Force) {
-        Write-StatusMessage "🔄 Force reinstall requested. Sysmon is currently running." 'Yellow'
+        Write-StatusMessage "[FORCE] Force reinstall requested. Sysmon is currently running." 'Yellow'
         Write-StatusMessage "This will uninstall and reinstall Sysmon with the latest version and configuration." 'Yellow'
     }
     
     if ($currentStatus.Installed -and -not $Force) {
-        Write-StatusMessage "⚠️ Sysmon is installed but not running. Attempting to start..." 'Yellow'
+        Write-StatusMessage "[WARNING] Sysmon is installed but not running. Attempting to start..." 'Yellow'
         try {
             Start-Service -Name $currentStatus.ServiceName
             Start-Sleep -Seconds 3
             $newStatus = Get-SysmonStatus
             if ($newStatus.Running) {
-                Write-StatusMessage "✅ Sysmon started successfully!" 'Green'
+                Write-StatusMessage "[SUCCESS] Sysmon started successfully!" 'Green'
                 try {
                     Show-SysmonInfo
                 } catch {
@@ -578,7 +579,7 @@ try {
                 exit 0
             }
         } catch {
-            Write-StatusMessage "❌ Could not start Sysmon: $($_.Exception.Message)" 'Red'
+            Write-StatusMessage "[ERROR] Could not start Sysmon: $($_.Exception.Message)" 'Red'
             Write-StatusMessage "Proceeding with reinstallation..." 'Yellow'
         }
     }
@@ -591,7 +592,7 @@ try {
             throw "Failed to download Sysmon. Check internet connectivity and firewall settings."
         }
     } else {
-        Write-StatusMessage "✅ Sysmon executable already exists" 'Green'
+        Write-StatusMessage "[SUCCESS] Sysmon executable already exists" 'Green'
     }
     
     # Download configuration
@@ -611,7 +612,7 @@ try {
     }
     
     # Wait a moment for service to initialize
-    Write-StatusMessage "⏳ Waiting for service initialization..." 'Yellow'
+    Write-StatusMessage "[WAIT] Waiting for service initialization..." 'Yellow'
     Start-Sleep -Seconds 5
     
     # Verify installation
@@ -631,27 +632,27 @@ try {
     }
     
     # Show final status
-    Write-Host "`n🎉 Sysmon Installation Complete!" -ForegroundColor Green
+    Write-Host "`n=== Sysmon Installation Complete! ===" -ForegroundColor Green
     Show-SysmonInfo
     
 } catch {
-    Write-Host "`n❌ Installation Failed!" -ForegroundColor Red
+    Write-Host "`n[ERROR] Installation Failed!" -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     
     # Show current system state for troubleshooting
     Write-Host "`nCurrent System State:" -ForegroundColor Yellow
     try {
         $debugStatus = Get-SysmonStatus
-        Write-Host "• Sysmon executable exists: $($debugStatus.ExecutableExists)" -ForegroundColor Gray
-        Write-Host "• Sysmon service installed: $($debugStatus.Installed)" -ForegroundColor Gray
-        Write-Host "• Service name: $($debugStatus.ServiceName)" -ForegroundColor Gray
-        Write-Host "• Service status: $($debugStatus.ServiceStatus)" -ForegroundColor Gray
+        Write-Host "* Sysmon executable exists: $($debugStatus.ExecutableExists)" -ForegroundColor Gray
+        Write-Host "* Sysmon service installed: $($debugStatus.Installed)" -ForegroundColor Gray
+        Write-Host "* Service name: $($debugStatus.ServiceName)" -ForegroundColor Gray
+        Write-Host "* Service status: $($debugStatus.ServiceStatus)" -ForegroundColor Gray
         
         if ($debugStatus.ErrorMessage) {
-            Write-Host "• Status check error: $($debugStatus.ErrorMessage)" -ForegroundColor Red
+            Write-Host "* Status check error: $($debugStatus.ErrorMessage)" -ForegroundColor Red
         }
     } catch {
-        Write-Host "• Could not get system state: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "* Could not get system state: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     if ($ShowDetails) {
@@ -665,12 +666,12 @@ try {
     }
     
     Write-Host "`nTroubleshooting Tips:" -ForegroundColor Yellow
-    Write-Host "• Ensure you're running as Administrator" -ForegroundColor Gray
-    Write-Host "• Check internet connectivity" -ForegroundColor Gray
-    Write-Host "• Temporarily disable antivirus/Windows Defender" -ForegroundColor Gray
-    Write-Host "• Run with -ShowDetails for detailed information" -ForegroundColor Gray
-    Write-Host "• Try -UseDefaultConfig if config download fails" -ForegroundColor Gray
-    Write-Host "• Check Windows Event Viewer for system errors" -ForegroundColor Gray
+    Write-Host "* Ensure you're running as Administrator" -ForegroundColor Gray
+    Write-Host "* Check internet connectivity" -ForegroundColor Gray
+    Write-Host "* Temporarily disable antivirus/Windows Defender" -ForegroundColor Gray
+    Write-Host "* Run with -ShowDetails for detailed information" -ForegroundColor Gray
+    Write-Host "* Try -UseDefaultConfig if config download fails" -ForegroundColor Gray
+    Write-Host "* Check Windows Event Viewer for system errors" -ForegroundColor Gray
     
     exit 1
 }

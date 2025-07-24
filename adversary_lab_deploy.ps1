@@ -357,7 +357,7 @@ function Get-InteractiveParameters {
             
         } while (-not $match)
         
-        Write-Host "✓ Password set successfully" -ForegroundColor Green
+        Write-Host "[SUCCESS] Password set successfully" -ForegroundColor Green
     }
     
     # Auto-detect IP if not provided
@@ -365,9 +365,9 @@ function Get-InteractiveParameters {
         Write-Host "`nDetecting your public IP address..." -ForegroundColor Yellow
         try {
             $script:MyIP = (Invoke-RestMethod -Uri "https://api.ipify.org" -TimeoutSec 10).Trim()
-            Write-Host "✓ Detected IP: $($script:MyIP)" -ForegroundColor Green
+            Write-Host "[SUCCESS] Detected IP: $($script:MyIP)" -ForegroundColor Green
         } catch {
-            Write-Host "⚠ Could not auto-detect IP. You may need to specify manually." -ForegroundColor Yellow
+            Write-Host "[WARNING] Could not auto-detect IP. You may need to specify manually." -ForegroundColor Yellow
         }
     }
     
@@ -528,7 +528,7 @@ function Start-LoggingLabDeployment {
     if (-not (Test-AzurePowerShell)) {
         throw "Azure PowerShell module is not available. Please install the Az module: Install-Module -Name Az"
     }
-    Write-ColoredOutput "✓ Azure PowerShell module found" "Green"
+    Write-ColoredOutput "[SUCCESS] Azure PowerShell module found" "Green"
     
     Write-ColoredOutput "`n=== Verifying Azure Authentication ===" "Cyan"
     # Initialize Azure context
@@ -543,7 +543,7 @@ function Start-LoggingLabDeployment {
         if (-not (Test-IPAddress -IP $MyIP)) {
             throw "Invalid IP address format: $MyIP"
         }
-        Write-ColoredOutput "✓ Using provided IP address: $MyIP" "Green"
+        Write-ColoredOutput "[SUCCESS] Using provided IP address: $MyIP" "Green"
     }
     
     Write-ColoredOutput "`n=== Validating Permissions ===" "Cyan"
@@ -563,7 +563,7 @@ function Start-LoggingLabDeployment {
  
         # ===== PHASE 1: Resource Group Level Deployment =====
         Write-ColoredOutput "`n=== Phase 1: Resource Group Level Deployment ===" "Cyan"
-        Write-ColoredOutput "This will take a while, make some ☕" "White"
+        Write-ColoredOutput "This will take a while, make some coffee" "White"
         
         # Params for deployment for resourcegroup level
         $rgParams = @{
@@ -600,7 +600,7 @@ function Start-LoggingLabDeployment {
             $SentinelUrl = $rgResult.Outputs.sentinelUrl.Value
             $StorageAccountName = $rgResult.Outputs.storageAccountName.Value
             
-            Write-ColoredOutput "✓ Resource Group deployment completed successfully!" "Green"
+            Write-ColoredOutput "[SUCCESS] Resource Group deployment completed successfully!" "Green"
             Write-ColoredOutput "  Workspace Name: $WorkspaceName" "White"
             Write-ColoredOutput "  VM Public IP: $VmPublicIP" "White"
             Write-ColoredOutput "  Storage Account: $StorageAccountName" "White"
@@ -624,11 +624,11 @@ function Start-LoggingLabDeployment {
             
             Write-ColoredOutput "Deploying Azure Activity logs..." "Yellow"
             $subResult = New-AzSubscriptionDeployment @subDeploymentParams
-            Write-ColoredOutput "✓ Subscription deployment completed successfully!" "Green"
+            Write-ColoredOutput "[SUCCESS] Subscription deployment completed successfully!" "Green"
             
             # ===== DEPLOYMENT SUMMARY =====
             Write-ColoredOutput "`n=== Deployment Summary ===" "Cyan"
-            Write-ColoredOutput "🎉 Resource Group and Subscription deployments completed successfully!" "Green"
+            Write-ColoredOutput "[SUCCESS] Resource Group and Subscription deployments completed successfully!" "Green"
             Write-ColoredOutput "Resource Group: $($script:ResourceGroupName)" "White"
             Write-ColoredOutput "Subscription: $($script:SubscriptionId)" "White"
             Write-ColoredOutput "Workspace: $WorkspaceName" "White"
@@ -641,7 +641,7 @@ function Start-LoggingLabDeployment {
             Write-ColoredOutput "Sentinel URL: $SentinelUrl" "Cyan"
             
             Write-ColoredOutput "`n=== Manual Steps Required ===" "Yellow"
-            Write-ColoredOutput "🔧 Entra ID Audit Logs Deployment:" "Red"
+            Write-ColoredOutput "[MANUAL STEP] Entra ID Audit Logs Deployment:" "Red"
             Write-ColoredOutput "Due to elevated permissions required, please deploy Entra ID logs manually:" "White"
             Write-ColoredOutput "1. Navigate to Azure Portal > Microsoft Entra ID > Diagnostic settings" "White"
             Write-ColoredOutput "2. Add diagnostic setting with the following configuration:" "White"
@@ -651,7 +651,7 @@ function Start-LoggingLabDeployment {
             Write-ColoredOutput "   - Workspace: $WorkspaceName" "Gray"
             Write-ColoredOutput "   - Resource ID: $WorkspaceResourceId" "Gray"
             
-            Write-ColoredOutput "`n🔧 VNET Flow Logs Setup:" "Yellow"
+            Write-ColoredOutput "`n[MANUAL STEP] VNET Flow Logs Setup:" "Yellow"
             Write-ColoredOutput "A storage account has been created and is ready for VNET flow logs:" "White"
             Write-ColoredOutput "1. Navigate to Azure Portal > Network Watcher > Flow logs" "White"
             Write-ColoredOutput "2. Create a new VNET flow log with the following configuration:" "White"
@@ -675,7 +675,7 @@ function Start-LoggingLabDeployment {
         }
     }
     catch {
-        Write-ColoredOutput "❌ Deployment failed: $($_.Exception.Message)" "Red"
+        Write-ColoredOutput "[ERROR] Deployment failed: $($_.Exception.Message)" "Red"
         Write-ColoredOutput "Error details: $($_.Exception.ToString())" "Red"
         throw
     }
@@ -690,7 +690,7 @@ try {
     Start-LoggingLabDeployment
 }
 catch {
-    Write-ColoredOutput "❌ Script execution failed: $($_.Exception.Message)" "Red"
+    Write-ColoredOutput "[ERROR] Script execution failed: $($_.Exception.Message)" "Red"
     Write-ColoredOutput "`nTroubleshooting Tips:" "Yellow"
     Write-ColoredOutput "1. Ensure you have the Azure PowerShell module installed: Install-Module -Name Az" "White"
     Write-ColoredOutput "2. Check that you have appropriate permissions in your Azure subscription" "White"
@@ -701,7 +701,7 @@ catch {
     exit 1
 }
 
-Write-ColoredOutput "`n🎉 Deployment orchestration completed successfully!" "Green"
+Write-ColoredOutput "`n[SUCCESS] Deployment orchestration completed successfully!" "Green"
 Write-ColoredOutput "Remember to manually configure:" "Yellow"
 Write-ColoredOutput "  - Entra ID diagnostic settings as outlined above" "White"
 Write-ColoredOutput "  - VNET flow logs using the created storage account (optional)" "White"

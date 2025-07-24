@@ -80,7 +80,16 @@ The lab deploys across three Azure scopes both manual and programatically:
 
 ## 🚀 Quick Start 
 
-### 1. Clone or Download Files
+### 1. Clone or Download Files from PS as Adminstrator
+
+```powershell
+PS C:\Users\<currentuser> winget install Git.Git
+
+PS git clone https://github.com/purpleshellsecurity/adversary_lab.git
+```
+
+<br>
+
 Ensure all Bicep templates and PowerShell script are in the same directory:
 ```
 azure-logging-lab/

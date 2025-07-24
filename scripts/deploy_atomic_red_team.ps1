@@ -149,7 +149,7 @@ function Get-AtomicStatus {
 }
 
 function Download-AtomicInstaller {
-    Write-StatusMessage "📥 Downloading Atomic Red Team installer..." 'Yellow'
+    Write-StatusMessage "[DOWNLOAD] Downloading Atomic Red Team installer..." 'Yellow'
     Write-DebugMessage "Download URL: $AtomicInstallerUrl"
     
     try {
@@ -175,11 +175,11 @@ function Download-AtomicInstaller {
             throw "Downloaded content doesn't appear to be the Atomic Red Team installer"
         }
         
-        Write-StatusMessage "✅ Atomic Red Team installer downloaded successfully" 'Green'
+        Write-StatusMessage "[SUCCESS] Atomic Red Team installer downloaded successfully" 'Green'
         return $installerScript.Content
         
     } catch {
-        Write-StatusMessage "❌ Failed to download installer: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to download installer: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Download error: $($_.Exception | Format-List * | Out-String)"
         throw $_
     }
@@ -188,13 +188,13 @@ function Download-AtomicInstaller {
 function Install-AtomicRedTeam {
     param([string]$InstallerScript)
     
-    Write-StatusMessage "🔧 Installing Atomic Red Team..." 'Yellow'
+    Write-StatusMessage "[INSTALL] Installing Atomic Red Team..." 'Yellow'
     Write-DebugMessage "Starting Atomic Red Team installation"
     
     try {
         # Create install directory if it doesn't exist
         if (-not (Test-Path $InstallPath)) {
-            Write-StatusMessage "📁 Creating installation directory..." 'Yellow'
+            Write-StatusMessage "[INSTALL] Creating installation directory..." 'Yellow'
             Write-DebugMessage "Creating directory: $InstallPath"
             New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
         }
@@ -236,15 +236,15 @@ function Install-AtomicRedTeam {
         # Execute the script block
         & $installScriptBlock
         
-        Write-StatusMessage "✅ Atomic Red Team installation completed" 'Green'
+        Write-StatusMessage "[SUCCESS] Atomic Red Team installation completed" 'Green'
         return $true
         
     } catch {
-        Write-StatusMessage "❌ Failed to install Atomic Red Team: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to install Atomic Red Team: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Installation error: $($_.Exception | Format-List * | Out-String)"
         
         # Try alternative installation method
-        Write-StatusMessage "🔄 Trying alternative installation method..." 'Yellow'
+        Write-StatusMessage "[RETRY] Trying alternative installation method..." 'Yellow'
         try {
             Write-DebugMessage "Attempting direct function execution"
             
@@ -266,11 +266,11 @@ function Install-AtomicRedTeam {
             # Call the function directly
             & (Get-Command Install-AtomicRedTeam) @installParams
             
-            Write-StatusMessage "✅ Alternative installation method succeeded" 'Green'
+            Write-StatusMessage "[SUCCESS] Alternative installation method succeeded" 'Green'
             return $true
             
         } catch {
-            Write-StatusMessage "❌ Alternative installation also failed: $($_.Exception.Message)" 'Red'
+            Write-StatusMessage "[ERROR] Alternative installation also failed: $($_.Exception.Message)" 'Red'
             Write-DebugMessage "Alternative installation error: $($_.Exception | Format-List * | Out-String)"
             return $false
         }
@@ -278,7 +278,7 @@ function Install-AtomicRedTeam {
 }
 
 function Configure-AtomicModule {
-    Write-StatusMessage "🔧 Configuring Atomic Red Team module..." 'Yellow'
+    Write-StatusMessage "[CONFIG] Configuring Atomic Red Team module..." 'Yellow'
     Write-DebugMessage "Configuring module for persistent access"
     
     try {
@@ -307,11 +307,11 @@ function Configure-AtomicModule {
             }
             
             [Environment]::SetEnvironmentVariable('PSModulePath', $userModulePath, 'User')
-            Write-StatusMessage "✅ Added Atomic Red Team to user PSModulePath" 'Green'
+            Write-StatusMessage "[SUCCESS] Added Atomic Red Team to user PSModulePath" 'Green'
             Write-DebugMessage "User PSModulePath updated successfully"
             
         } catch {
-            Write-StatusMessage "⚠️ Could not update user PSModulePath: $($_.Exception.Message)" 'Yellow'
+            Write-StatusMessage "[WARNING] Could not update user PSModulePath: $($_.Exception.Message)" 'Yellow'
             Write-DebugMessage "User PSModulePath update failed: $($_.Exception.Message)"
             
             # Try system PSModulePath if we have admin rights
@@ -320,37 +320,37 @@ function Configure-AtomicModule {
                     $systemModulePath = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')
                     if ($systemModulePath -notmatch [regex]::Escape($ModulePath)) {
                         [Environment]::SetEnvironmentVariable('PSModulePath', "$systemModulePath;$ModulePath", 'Machine')
-                        Write-StatusMessage "✅ Added Atomic Red Team to system PSModulePath (admin)" 'Green'
+                        Write-StatusMessage "[SUCCESS] Added Atomic Red Team to system PSModulePath (admin)" 'Green'
                         Write-DebugMessage "System PSModulePath updated successfully"
                     }
                 } catch {
-                    Write-StatusMessage "⚠️ Could not update system PSModulePath: $($_.Exception.Message)" 'Yellow'
+                    Write-StatusMessage "[WARNING] Could not update system PSModulePath: $($_.Exception.Message)" 'Yellow'
                     Write-DebugMessage "System PSModulePath update failed: $($_.Exception.Message)"
                 }
             }
         }
         
         # Try to import the module
-        Write-StatusMessage "📦 Importing Atomic Red Team module..." 'Yellow'
+        Write-StatusMessage "[IMPORT] Importing Atomic Red Team module..." 'Yellow'
         try {
             Import-Module invoke-atomicredteam -Force -ErrorAction Stop
-            Write-StatusMessage "✅ Module imported successfully" 'Green'
+            Write-StatusMessage "[SUCCESS] Module imported successfully" 'Green'
             return $true
         } catch {
-            Write-StatusMessage "⚠️ Could not import module: $($_.Exception.Message)" 'Yellow'
+            Write-StatusMessage "[WARNING] Could not import module: $($_.Exception.Message)" 'Yellow'
             Write-StatusMessage "Module is installed but may need manual import" 'Gray'
             return $true
         }
         
     } catch {
-        Write-StatusMessage "❌ Failed to configure module: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to configure module: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Module configuration error: $($_.Exception | Format-List * | Out-String)"
         return $false
     }
 }
 
 function Test-AtomicInstallation {
-    Write-StatusMessage "🔍 Verifying Atomic Red Team installation..." 'Yellow'
+    Write-StatusMessage "[VERIFY] Verifying Atomic Red Team installation..." 'Yellow'
     Write-DebugMessage "Testing installation"
     
     try {
@@ -372,7 +372,7 @@ function Test-AtomicInstallation {
                 Import-Module invoke-atomicredteam -Force -ErrorAction Stop
                 Write-DebugMessage "Successfully imported module for testing"
             } catch {
-                Write-StatusMessage "⚠️ Module exists but couldn't import: $($_.Exception.Message)" 'Yellow'
+                Write-StatusMessage "[WARNING] Module exists but couldn't import: $($_.Exception.Message)" 'Yellow'
                 Write-StatusMessage "This might be normal - module can be imported manually" 'Gray'
             }
         }
@@ -381,23 +381,23 @@ function Test-AtomicInstallation {
         try {
             $commands = Get-Command -Module invoke-atomicredteam -ErrorAction SilentlyContinue
             if ($commands) {
-                Write-StatusMessage "✅ Atomic Red Team is working correctly!" 'Green'
+                Write-StatusMessage "[SUCCESS] Atomic Red Team is working correctly!" 'Green'
                 Write-StatusMessage "   Module Version: $($status.ModuleVersion)" 'Gray'
                 Write-StatusMessage "   Available Commands: $($commands.Count)" 'Gray'
                 Write-StatusMessage "   Technique Count: $($status.TechniqueCount)" 'Gray'
                 return $true
             } else {
-                Write-StatusMessage "⚠️ Module installed but commands not available" 'Yellow'
+                Write-StatusMessage "[WARNING] Module installed but commands not available" 'Yellow'
                 Write-StatusMessage "This might be normal - try importing manually" 'Gray'
                 return $true
             }
         } catch {
-            Write-StatusMessage "⚠️ Could not test module commands: $($_.Exception.Message)" 'Yellow'
+            Write-StatusMessage "[WARNING] Could not test module commands: $($_.Exception.Message)" 'Yellow'
             return $true
         }
         
     } catch {
-        Write-StatusMessage "❌ Installation verification failed: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Installation verification failed: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Verification error: $($_.Exception | Format-List * | Out-String)"
         return $false
     }
@@ -405,17 +405,17 @@ function Test-AtomicInstallation {
 
 function Show-AtomicInfo {
     Write-Host "`n" -NoNewline
-    Write-Host "🧪 Atomic Red Team Information" -ForegroundColor Cyan
-    Write-Host "==============================" -ForegroundColor Cyan
+    Write-Host "=== Atomic Red Team Information ===" -ForegroundColor Cyan
+    Write-Host "===================================" -ForegroundColor Cyan
     
     try {
         $status = Get-AtomicStatus
         
         Write-Host "Installation Status: " -NoNewline
         if ($status.Installed) {
-            Write-Host "✅ Installed" -ForegroundColor Green
+            Write-Host "[INSTALLED]" -ForegroundColor Green
         } else {
-            Write-Host "❌ Not installed" -ForegroundColor Red
+            Write-Host "[NOT INSTALLED]" -ForegroundColor Red
         }
         
         Write-Host "Installation Path: $($status.InstallPath)" -ForegroundColor Gray
@@ -442,7 +442,7 @@ function Show-AtomicInfo {
                     try {
                         Import-Module $manifestPath -Force -ErrorAction Stop
                         $moduleImported = $true
-                        Write-Host "  ✅ Module imported using direct path" -ForegroundColor Green
+                        Write-Host "  [SUCCESS] Module imported using direct path" -ForegroundColor Green
                     } catch {
                         Write-DebugMessage "Direct path import failed: $($_.Exception.Message)"
                     }
@@ -453,7 +453,7 @@ function Show-AtomicInfo {
                     try {
                         Import-Module invoke-atomicredteam -Force -ErrorAction Stop
                         $moduleImported = $true
-                        Write-Host "  ✅ Module imported by name" -ForegroundColor Green
+                        Write-Host "  [SUCCESS] Module imported by name" -ForegroundColor Green
                     } catch {
                         Write-DebugMessage "Name-based import failed: $($_.Exception.Message)"
                     }
@@ -470,14 +470,14 @@ function Show-AtomicInfo {
                             Write-Host "  Key commands available: $($keyCommands.Name -join ', ')" -ForegroundColor Gray
                         }
                     } else {
-                        Write-Host "  ⚠️ Module imported but no commands found" -ForegroundColor Yellow
+                        Write-Host "  [WARNING] Module imported but no commands found" -ForegroundColor Yellow
                     }
                 } else {
-                    Write-Host "  ⚠️ Could not import module automatically" -ForegroundColor Yellow
+                    Write-Host "  [WARNING] Could not import module automatically" -ForegroundColor Yellow
                     Write-Host "  Try manual import: Import-Module '$manifestPath'" -ForegroundColor Gray
                 }
             } catch {
-                Write-Host "  ⚠️ Module test failed: $($_.Exception.Message)" -ForegroundColor Yellow
+                Write-Host "  [WARNING] Module test failed: $($_.Exception.Message)" -ForegroundColor Yellow
                 Write-Host "  Try manual import: Import-Module '$($status.ModulePath)'" -ForegroundColor Gray
             }
         }
@@ -510,7 +510,7 @@ function Show-AtomicInfo {
         Write-Host "  T1003 - OS credential dumping" -ForegroundColor Gray
         Write-Host "  T1082 - System information discovery" -ForegroundColor Gray
         
-        Write-Host "`n⚠️ IMPORTANT: Only run tests in isolated lab environments!" -ForegroundColor Yellow
+        Write-Host "`n[IMPORTANT] Only run tests in isolated lab environments!" -ForegroundColor Yellow
         
     } catch {
         Write-Host "Error displaying Atomic Red Team information: $($_.Exception.Message)" -ForegroundColor Red
@@ -519,31 +519,31 @@ function Show-AtomicInfo {
 
 # Main execution
 try {
-    Write-Host "🧪 Atomic Red Team Standalone Installer" -ForegroundColor Cyan
-    Write-Host "=======================================" -ForegroundColor Cyan
+    Write-Host "=== Atomic Red Team Standalone Installer ===" -ForegroundColor Cyan
+    Write-Host "============================================" -ForegroundColor Cyan
     
     if ($ShowDetails) {
-        Write-Host "🐛 Detailed logging enabled" -ForegroundColor Magenta
+        Write-Host "[DEBUG] Detailed logging enabled" -ForegroundColor Magenta
     }
     
     # Check prerequisites
-    Write-StatusMessage "`n🔍 Checking prerequisites..." 'Yellow'
+    Write-StatusMessage "`n[CHECK] Checking prerequisites..." 'Yellow'
     
     $isAdmin = Test-Administrator
     if ($isAdmin) {
-        Write-StatusMessage "✅ Administrator privileges detected" 'Green'
+        Write-StatusMessage "[SUCCESS] Administrator privileges detected" 'Green'
     } else {
-        Write-StatusMessage "⚠️ Not running as Administrator (module PATH updates may be limited)" 'Yellow'
+        Write-StatusMessage "[WARNING] Not running as Administrator (module PATH updates may be limited)" 'Yellow'
     }
     
     # Check current status
-    Write-StatusMessage "`n📊 Checking current Atomic Red Team status..." 'Yellow'
+    Write-StatusMessage "`n[STATUS] Checking current Atomic Red Team status..." 'Yellow'
     $currentStatus = Get-AtomicStatus
     
     Write-DebugMessage "Current status: Installed=$($currentStatus.Installed), ModuleLoaded=$($currentStatus.ModuleLoaded)"
     
     if ($currentStatus.Installed -and -not $Force) {
-        Write-StatusMessage "✅ Atomic Red Team is already installed!" 'Green'
+        Write-StatusMessage "[SUCCESS] Atomic Red Team is already installed!" 'Green'
         try {
             Show-AtomicInfo
         } catch {
@@ -552,7 +552,7 @@ try {
         Write-StatusMessage "`nUse -Force to reinstall" 'Yellow'
         exit 0
     } elseif ($currentStatus.Installed -and $Force) {
-        Write-StatusMessage "🔄 Force reinstall requested." 'Yellow'
+        Write-StatusMessage "[FORCE] Force reinstall requested." 'Yellow'
         Write-StatusMessage "This will reinstall Atomic Red Team with the latest version." 'Yellow'
     }
     
@@ -571,7 +571,7 @@ try {
     Write-DebugMessage "Configuring module"
     $configSuccess = Configure-AtomicModule
     if (-not $configSuccess) {
-        Write-StatusMessage "⚠️ Module configuration had issues, but installation may still work" 'Yellow'
+        Write-StatusMessage "[WARNING] Module configuration had issues, but installation may still work" 'Yellow'
     }
     
     # Verify installation
@@ -582,10 +582,10 @@ try {
     }
     
     # Show final status
-    Write-Host "`n🎉 Atomic Red Team Installation Complete!" -ForegroundColor Green
+    Write-Host "`n=== Atomic Red Team Installation Complete! ===" -ForegroundColor Green
     Show-AtomicInfo
     
-    Write-Host "`n🚀 Quick Start:" -ForegroundColor Yellow
+    Write-Host "`n[QUICK START]" -ForegroundColor Yellow
     Write-Host "  1. Import module: " -NoNewline -ForegroundColor Gray
     Write-Host "Import-Module invoke-atomicredteam" -ForegroundColor White
     Write-Host "  2. List techniques: " -NoNewline -ForegroundColor Gray
@@ -594,24 +594,24 @@ try {
     Write-Host "Invoke-AtomicTest T1059.001 -ShowDetailsBrief" -ForegroundColor White
     
 } catch {
-    Write-Host "`n❌ Installation Failed!" -ForegroundColor Red
+    Write-Host "`n[ERROR] Installation Failed!" -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     
     # Show current system state for troubleshooting
     Write-Host "`nCurrent System State:" -ForegroundColor Yellow
     try {
         $debugStatus = Get-AtomicStatus
-        Write-Host "• Installation directory exists: $(Test-Path $debugStatus.InstallPath)" -ForegroundColor Gray
-        Write-Host "• Module directory exists: $($debugStatus.ModuleExists)" -ForegroundColor Gray
-        Write-Host "• Atomics directory exists: $($debugStatus.AtomicsExist)" -ForegroundColor Gray
-        Write-Host "• Module importable: $($debugStatus.ModuleImportable)" -ForegroundColor Gray
-        Write-Host "• Technique count: $($debugStatus.TechniqueCount)" -ForegroundColor Gray
+        Write-Host "* Installation directory exists: $(Test-Path $debugStatus.InstallPath)" -ForegroundColor Gray
+        Write-Host "* Module directory exists: $($debugStatus.ModuleExists)" -ForegroundColor Gray
+        Write-Host "* Atomics directory exists: $($debugStatus.AtomicsExist)" -ForegroundColor Gray
+        Write-Host "* Module importable: $($debugStatus.ModuleImportable)" -ForegroundColor Gray
+        Write-Host "* Technique count: $($debugStatus.TechniqueCount)" -ForegroundColor Gray
         
         if ($debugStatus.ErrorMessage) {
-            Write-Host "• Status check error: $($debugStatus.ErrorMessage)" -ForegroundColor Red
+            Write-Host "* Status check error: $($debugStatus.ErrorMessage)" -ForegroundColor Red
         }
     } catch {
-        Write-Host "• Could not get system state: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "* Could not get system state: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     if ($ShowDetails) {
@@ -625,12 +625,12 @@ try {
     }
     
     Write-Host "`nTroubleshooting Tips:" -ForegroundColor Yellow
-    Write-Host "• Check internet connectivity to GitHub" -ForegroundColor Gray
-    Write-Host "• Temporarily disable antivirus/Windows Defender" -ForegroundColor Gray
-    Write-Host "• Run with -ShowDetails for detailed information" -ForegroundColor Gray
-    Write-Host "• Try -SkipAtomics to install just the module without techniques" -ForegroundColor Gray
-    Write-Host "• Use -InstallPath to try a different installation directory" -ForegroundColor Gray
-    Write-Host "• Check PowerShell execution policy: Get-ExecutionPolicy" -ForegroundColor Gray
+    Write-Host "* Check internet connectivity to GitHub" -ForegroundColor Gray
+    Write-Host "* Temporarily disable antivirus/Windows Defender" -ForegroundColor Gray
+    Write-Host "* Run with -ShowDetails for detailed information" -ForegroundColor Gray
+    Write-Host "* Try -SkipAtomics to install just the module without techniques" -ForegroundColor Gray
+    Write-Host "* Use -InstallPath to try a different installation directory" -ForegroundColor Gray
+    Write-Host "* Check PowerShell execution policy: Get-ExecutionPolicy" -ForegroundColor Gray
     
     exit 1
 }

@@ -111,7 +111,7 @@ function Get-StratusStatus {
 }
 
 function Get-LatestStratusRelease {
-    Write-StatusMessage "🔍 Checking for latest Stratus Red Team release..." 'Yellow'
+    Write-StatusMessage "[CHECK] Checking for latest Stratus Red Team release..." 'Yellow'
     Write-DebugMessage "Fetching release info from GitHub API"
     
     try {
@@ -175,7 +175,7 @@ function Get-LatestStratusRelease {
         }
         
     } catch {
-        Write-StatusMessage "❌ Failed to get release information: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to get release information: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Release fetch error: $($_.Exception | Format-List * | Out-String)"
         throw $_
     }
@@ -184,7 +184,7 @@ function Get-LatestStratusRelease {
 function Download-StratusRedTeam {
     param($ReleaseInfo)
     
-    Write-StatusMessage "📥 Downloading Stratus Red Team $($ReleaseInfo.Version)..." 'Yellow'
+    Write-StatusMessage "[DOWNLOAD] Downloading Stratus Red Team $($ReleaseInfo.Version)..." 'Yellow'
     Write-DebugMessage "Download URL: $($ReleaseInfo.DownloadUrl)"
     Write-DebugMessage "Architecture: $($ReleaseInfo.Architecture)"
     
@@ -224,11 +224,12 @@ function Download-StratusRedTeam {
         Write-DebugMessage "Download completed. File size: $downloadedSize bytes"
         
         if ($downloadedSize -lt 1000) {
-            throw "Downloaded file is too small ($downloadedSize bytes) - likely corrupted"
+            $downloadedSizeStr = $downloadedSize.ToString()
+            throw "Downloaded file is too small ($downloadedSizeStr bytes) - likely corrupted"
         }
         
         # Extract tar.gz archive
-        Write-StatusMessage "📦 Extracting Stratus Red Team..." 'Yellow'
+        Write-StatusMessage "[EXTRACT] Extracting Stratus Red Team..." 'Yellow'
         Write-DebugMessage "Extracting to: $tempExtract"
         
         if (Test-Path $tempExtract) {
@@ -256,7 +257,7 @@ function Download-StratusRedTeam {
             }
         } else {
             # Fallback: Try PowerShell method (limited tar.gz support)
-            Write-StatusMessage "⚠️ Using PowerShell fallback extraction (may not work for all tar.gz files)" 'Yellow'
+            Write-StatusMessage "[WARNING] Using PowerShell fallback extraction (may not work for all tar.gz files)" 'Yellow'
             
             # First try to decompress .gz to .tar
             try {
@@ -319,14 +320,14 @@ function Download-StratusRedTeam {
         
         # Create installation directory
         if (-not (Test-Path $InstallPath)) {
-            Write-StatusMessage "📁 Creating installation directory..." 'Yellow'
+            Write-StatusMessage "[INSTALL] Creating installation directory..." 'Yellow'
             Write-DebugMessage "Creating directory: $InstallPath"
             New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
         }
         
         # Copy executable to installation directory
         $finalPath = Join-Path $InstallPath $StratusExecutable
-        Write-StatusMessage "📁 Installing to $InstallPath..." 'Yellow'
+        Write-StatusMessage "[INSTALL] Installing to $InstallPath..." 'Yellow'
         Write-DebugMessage "Copying from $stratusExeFullPath to $finalPath"
         
         Copy-Item -Path $stratusExeFullPath -Destination $finalPath -Force
@@ -339,11 +340,11 @@ function Download-StratusRedTeam {
         $installedSize = (Get-Item $finalPath).Length
         Write-DebugMessage "Stratus installed successfully. Size: $installedSize bytes"
         
-        Write-StatusMessage "✅ Stratus Red Team downloaded and installed successfully" 'Green'
+        Write-StatusMessage "[SUCCESS] Stratus Red Team downloaded and installed successfully" 'Green'
         return $finalPath
         
     } catch {
-        Write-StatusMessage "❌ Failed to download/install Stratus Red Team: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to download/install Stratus Red Team: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Download/install error: $($_.Exception | Format-List * | Out-String)"
         throw $_
     } finally {
@@ -365,7 +366,7 @@ function Download-StratusRedTeam {
 function Add-StratusToPath {
     param([switch]$Force)
     
-    Write-StatusMessage "🔧 Configuring PATH environment..." 'Yellow'
+    Write-StatusMessage "[CONFIG] Configuring PATH environment..." 'Yellow'
     Write-DebugMessage "Adding $InstallPath to PATH"
     
     try {
@@ -389,12 +390,12 @@ function Add-StratusToPath {
             }
             
             [Environment]::SetEnvironmentVariable('PATH', $userPath, 'User')
-            Write-StatusMessage "✅ Added Stratus to user PATH" 'Green'
+            Write-StatusMessage "[SUCCESS] Added Stratus to user PATH" 'Green'
             Write-DebugMessage "User PATH updated successfully"
             return $true
             
         } catch {
-            Write-StatusMessage "⚠️ Could not update user PATH: $($_.Exception.Message)" 'Yellow'
+            Write-StatusMessage "[WARNING] Could not update user PATH: $($_.Exception.Message)" 'Yellow'
             Write-DebugMessage "User PATH update failed: $($_.Exception.Message)"
             
             # Try system PATH if we have admin rights
@@ -403,12 +404,12 @@ function Add-StratusToPath {
                     $systemPath = [Environment]::GetEnvironmentVariable('PATH', 'Machine')
                     if ($systemPath -notmatch [regex]::Escape($InstallPath)) {
                         [Environment]::SetEnvironmentVariable('PATH', "$systemPath;$InstallPath", 'Machine')
-                        Write-StatusMessage "✅ Added Stratus to system PATH (admin)" 'Green'
+                        Write-StatusMessage "[SUCCESS] Added Stratus to system PATH (admin)" 'Green'
                         Write-DebugMessage "System PATH updated successfully"
                         return $true
                     }
                 } catch {
-                    Write-StatusMessage "⚠️ Could not update system PATH: $($_.Exception.Message)" 'Yellow'
+                    Write-StatusMessage "[WARNING] Could not update system PATH: $($_.Exception.Message)" 'Yellow'
                     Write-DebugMessage "System PATH update failed: $($_.Exception.Message)"
                 }
             }
@@ -417,7 +418,7 @@ function Add-StratusToPath {
         }
         
     } catch {
-        Write-StatusMessage "❌ Failed to configure PATH: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Failed to configure PATH: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "PATH configuration error: $($_.Exception | Format-List * | Out-String)"
         return $false
     }
@@ -426,7 +427,7 @@ function Add-StratusToPath {
 function Test-StratusInstallation {
     param([string]$ExecutablePath)
     
-    Write-StatusMessage "🔍 Verifying Stratus Red Team installation..." 'Yellow'
+    Write-StatusMessage "[VERIFY] Verifying Stratus Red Team installation..." 'Yellow'
     Write-DebugMessage "Testing installation at: $ExecutablePath"
     
     try {
@@ -455,7 +456,7 @@ function Test-StratusInstallation {
         $listOutput = & $ExecutablePath list 2>$null
         
         if ($listOutput -and $listOutput -notlike "*error*") {
-            Write-StatusMessage "✅ Stratus Red Team is working correctly!" 'Green'
+            Write-StatusMessage "[SUCCESS] Stratus Red Team is working correctly!" 'Green'
             Write-StatusMessage "   Version: $($versionOutput)" 'Gray'
             
             # Count available techniques
@@ -466,13 +467,13 @@ function Test-StratusInstallation {
             
             return $true
         } else {
-            Write-StatusMessage "⚠️ Stratus installed but may have issues listing techniques" 'Yellow'
+            Write-StatusMessage "[WARNING] Stratus installed but may have issues listing techniques" 'Yellow'
             Write-StatusMessage "   This might be normal if cloud credentials aren't configured" 'Gray'
             return $true
         }
         
     } catch {
-        Write-StatusMessage "❌ Stratus installation verification failed: $($_.Exception.Message)" 'Red'
+        Write-StatusMessage "[ERROR] Stratus installation verification failed: $($_.Exception.Message)" 'Red'
         Write-DebugMessage "Verification error: $($_.Exception | Format-List * | Out-String)"
         return $false
     }
@@ -480,17 +481,17 @@ function Test-StratusInstallation {
 
 function Show-StratusInfo {
     Write-Host "`n" -NoNewline
-    Write-Host "☁️ Stratus Red Team Information" -ForegroundColor Cyan
-    Write-Host "===============================" -ForegroundColor Cyan
+    Write-Host "=== Stratus Red Team Information ===" -ForegroundColor Cyan
+    Write-Host "====================================" -ForegroundColor Cyan
     
     try {
         $status = Get-StratusStatus
         
         Write-Host "Installation Status: " -NoNewline
         if ($status.Installed) {
-            Write-Host "✅ Installed" -ForegroundColor Green
+            Write-Host "[INSTALLED]" -ForegroundColor Green
         } else {
-            Write-Host "❌ Not installed" -ForegroundColor Red
+            Write-Host "[NOT INSTALLED]" -ForegroundColor Red
         }
         
         Write-Host "Installation Path: $($status.InstallPath)" -ForegroundColor Gray
@@ -508,13 +509,13 @@ function Show-StratusInfo {
             try {
                 $quickTest = & $status.ExecutablePath version 2>$null
                 if ($quickTest) {
-                    Write-Host "  ✅ Stratus responds correctly" -ForegroundColor Green
+                    Write-Host "  [SUCCESS] Stratus responds correctly" -ForegroundColor Green
                     Write-Host "  Version: $quickTest" -ForegroundColor Gray
                 } else {
-                    Write-Host "  ⚠️ Stratus may have issues" -ForegroundColor Yellow
+                    Write-Host "  [WARNING] Stratus may have issues" -ForegroundColor Yellow
                 }
             } catch {
-                Write-Host "  ❌ Stratus test failed: $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "  [ERROR] Stratus test failed: $($_.Exception.Message)" -ForegroundColor Red
             }
         }
         
@@ -542,31 +543,31 @@ function Show-StratusInfo {
 
 # Main execution
 try {
-    Write-Host "☁️ Stratus Red Team Standalone Installer" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "=== Stratus Red Team Standalone Installer ===" -ForegroundColor Cyan
+    Write-Host "=============================================" -ForegroundColor Cyan
     
     if ($ShowDetails) {
-        Write-Host "🐛 Detailed logging enabled" -ForegroundColor Magenta
+        Write-Host "[DEBUG] Detailed logging enabled" -ForegroundColor Magenta
     }
     
     # Check prerequisites
-    Write-StatusMessage "`n🔍 Checking prerequisites..." 'Yellow'
+    Write-StatusMessage "`n[CHECK] Checking prerequisites..." 'Yellow'
     
     $isAdmin = Test-Administrator
     if ($isAdmin) {
-        Write-StatusMessage "✅ Administrator privileges detected" 'Green'
+        Write-StatusMessage "[SUCCESS] Administrator privileges detected" 'Green'
     } else {
-        Write-StatusMessage "⚠️ Not running as Administrator (PATH updates may be limited)" 'Yellow'
+        Write-StatusMessage "[WARNING] Not running as Administrator (PATH updates may be limited)" 'Yellow'
     }
     
     # Check current status
-    Write-StatusMessage "`n📊 Checking current Stratus Red Team status..." 'Yellow'
+    Write-StatusMessage "`n[STATUS] Checking current Stratus Red Team status..." 'Yellow'
     $currentStatus = Get-StratusStatus
     
     Write-DebugMessage "Current status: Installed=$($currentStatus.Installed), InPath=$($currentStatus.InPath)"
     
     if ($currentStatus.Installed -and -not $Force) {
-        Write-StatusMessage "✅ Stratus Red Team is already installed!" 'Green'
+        Write-StatusMessage "[SUCCESS] Stratus Red Team is already installed!" 'Green'
         try {
             Show-StratusInfo
         } catch {
@@ -575,16 +576,16 @@ try {
         Write-StatusMessage "`nUse -Force to reinstall or -AddToPath to update PATH" 'Yellow'
         exit 0
     } elseif ($currentStatus.Installed -and $Force) {
-        Write-StatusMessage "🔄 Force reinstall requested." 'Yellow'
+        Write-StatusMessage "[FORCE] Force reinstall requested." 'Yellow'
         Write-StatusMessage "This will download and install the latest version." 'Yellow'
     }
     
     # Get latest release information
     Write-DebugMessage "Fetching latest release information"
     $releaseInfo = Get-LatestStratusRelease
-    Write-StatusMessage "📋 Latest version: $($releaseInfo.Version)" 'Cyan'
-    Write-StatusMessage "📋 Published: $($releaseInfo.PublishedAt)" 'Cyan'
-    Write-StatusMessage "📋 File: $($releaseInfo.FileName)" 'Cyan'
+    Write-StatusMessage "[INFO] Latest version: $($releaseInfo.Version)" 'Cyan'
+    Write-StatusMessage "[INFO] Published: $($releaseInfo.PublishedAt)" 'Cyan'
+    Write-StatusMessage "[INFO] File: $($releaseInfo.FileName)" 'Cyan'
     
     # Download and install
     Write-DebugMessage "Starting download and installation"
@@ -595,11 +596,11 @@ try {
         Write-DebugMessage "Adding to PATH"
         $pathSuccess = Add-StratusToPath
         if (-not $pathSuccess) {
-            Write-StatusMessage "⚠️ PATH update failed, but installation succeeded" 'Yellow'
+            Write-StatusMessage "[WARNING] PATH update failed, but installation succeeded" 'Yellow'
             Write-StatusMessage "You can run Stratus using the full path: $installedPath" 'Gray'
         }
     } else {
-        Write-StatusMessage "💡 Use -AddToPath to add Stratus to your PATH for easy access" 'Cyan'
+        Write-StatusMessage "[INFO] Use -AddToPath to add Stratus to your PATH for easy access" 'Cyan'
     }
     
     # Verify installation
@@ -610,10 +611,10 @@ try {
     }
     
     # Show final status
-    Write-Host "`n🎉 Stratus Red Team Installation Complete!" -ForegroundColor Green
+    Write-Host "`n=== Stratus Red Team Installation Complete! ===" -ForegroundColor Green
     Show-StratusInfo
     
-    Write-Host "`n🚀 Quick Start:" -ForegroundColor Yellow
+    Write-Host "`n[QUICK START]" -ForegroundColor Yellow
     Write-Host "  1. List available techniques: " -NoNewline -ForegroundColor Gray
     if ($currentStatus.InPath -or (Get-StratusStatus).InPath) {
         Write-Host "stratus list" -ForegroundColor White
@@ -628,23 +629,23 @@ try {
     }
     
 } catch {
-    Write-Host "`n❌ Installation Failed!" -ForegroundColor Red
+    Write-Host "`n[ERROR] Installation Failed!" -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     
     # Show current system state for troubleshooting
     Write-Host "`nCurrent System State:" -ForegroundColor Yellow
     try {
         $debugStatus = Get-StratusStatus
-        Write-Host "• Installation directory exists: $(Test-Path $debugStatus.InstallPath)" -ForegroundColor Gray
-        Write-Host "• Stratus executable exists: $($debugStatus.Installed)" -ForegroundColor Gray
-        Write-Host "• Executable path: $($debugStatus.ExecutablePath)" -ForegroundColor Gray
-        Write-Host "• In PATH: $($debugStatus.InPath)" -ForegroundColor Gray
+        Write-Host "* Installation directory exists: $(Test-Path $debugStatus.InstallPath)" -ForegroundColor Gray
+        Write-Host "* Stratus executable exists: $($debugStatus.Installed)" -ForegroundColor Gray
+        Write-Host "* Executable path: $($debugStatus.ExecutablePath)" -ForegroundColor Gray
+        Write-Host "* In PATH: $($debugStatus.InPath)" -ForegroundColor Gray
         
         if ($debugStatus.ErrorMessage) {
-            Write-Host "• Status check error: $($debugStatus.ErrorMessage)" -ForegroundColor Red
+            Write-Host "* Status check error: $($debugStatus.ErrorMessage)" -ForegroundColor Red
         }
     } catch {
-        Write-Host "• Could not get system state: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "* Could not get system state: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     if ($ShowDetails) {
@@ -658,11 +659,11 @@ try {
     }
     
     Write-Host "`nTroubleshooting Tips:" -ForegroundColor Yellow
-    Write-Host "• Check internet connectivity to GitHub" -ForegroundColor Gray
-    Write-Host "• Temporarily disable antivirus/Windows Defender" -ForegroundColor Gray
-    Write-Host "• Run with -ShowDetails for detailed information" -ForegroundColor Gray
-    Write-Host "• Try a different -InstallPath if current location has issues" -ForegroundColor Gray
-    Write-Host "• Check GitHub releases page manually: https://github.com/DataDog/stratus-red-team/releases" -ForegroundColor Gray
+    Write-Host "* Check internet connectivity to GitHub" -ForegroundColor Gray
+    Write-Host "* Temporarily disable antivirus/Windows Defender" -ForegroundColor Gray
+    Write-Host "* Run with -ShowDetails for detailed information" -ForegroundColor Gray
+    Write-Host "* Try a different -InstallPath if current location has issues" -ForegroundColor Gray
+    Write-Host "* Check GitHub releases page manually: https://github.com/DataDog/stratus-red-team/releases" -ForegroundColor Gray
     
     exit 1
 }
