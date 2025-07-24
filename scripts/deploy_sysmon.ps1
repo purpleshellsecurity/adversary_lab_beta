@@ -8,9 +8,9 @@
     Version: 1.0
     Requires: Administrator privileges
 .EXAMPLE
-    .\Install-Sysmon.ps1
-    .\Install-Sysmon.ps1 -ShowDetails -UseDefaultConfig
-    .\Install-Sysmon.ps1 -ConfigUrl "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml"
+    .\deploy_sysmon.ps1
+    .\deploy_sysmon.ps1 -ShowDetails -UseDefaultConfig
+    .\deploy_sysmon.ps1 -ConfigUrl "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml"
 #>
 
 [CmdletBinding()]

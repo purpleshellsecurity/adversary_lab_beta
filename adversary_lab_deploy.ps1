@@ -162,7 +162,6 @@ param(
     )]
     [string]$AdminUsername = "",
     
-    # === OPTIONAL PARAMETERS WITH BICEP-ALIGNED DEFAULTS ===
     [Parameter(
         Mandatory = $false,
         HelpMessage = "Enter your public IP address for RDP access (leave blank for auto-detection)"
@@ -201,7 +200,6 @@ param(
     )]
     [switch]$ForceLogin,
     
-    # === AUTO-SHUTDOWN PARAMETERS (ALIGNED WITH BICEP) ===
     [Parameter(
         Mandatory = $false,
         HelpMessage = "Enable automatic VM shutdown to save costs? (default: true)"
@@ -311,7 +309,7 @@ function Get-PublicIPAddress {
 
 # === INTERACTIVE PARAMETER COLLECTION FUNCTION ===
 function Get-InteractiveParameters {
-    Write-Host "`n=== Azure Logging Lab Setup ===" -ForegroundColor Cyan
+    Write-Host "`n=== Adversary Lab Deployer ===" -ForegroundColor Cyan
     Write-Host "This wizard will help you configure your lab environment.`n" -ForegroundColor White
     
     # Collect required parameters if not provided
@@ -567,7 +565,7 @@ function Start-LoggingLabDeployment {
         Write-ColoredOutput "`n=== Phase 1: Resource Group Level Deployment ===" "Cyan"
         Write-ColoredOutput "This will take a while, make some ☕" "White"
         
-        # ALIGNED PARAMETER MAPPING
+        # Params for deployment for resourcegroup level
         $rgParams = @{
             location = $script:Location
             adminUsername = $script:AdminUsername
@@ -610,6 +608,7 @@ function Start-LoggingLabDeployment {
             # ===== PHASE 2: Subscription Level Deployment =====
             Write-ColoredOutput "`n=== Phase 2: Subscription Level Deployment ===" "Cyan"
             
+            # Params for subscription level deployment
             $subParams = @{
                 resourceGroupName = $script:ResourceGroupName
                 workspaceName = $WorkspaceName
