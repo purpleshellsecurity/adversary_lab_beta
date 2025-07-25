@@ -54,6 +54,7 @@ The lab deploys across three Azure scopes both manual and programatically:
 ### Required Software
 - **PowerShell 7 or later** - [Download here](https://github.com/PowerShell/PowerShell/releases)
 - **Azure PowerShell Module (Az)** - Install with: `Install-Module -Name Az`
+- **VS code** - Install with `winget install code`
 
 ### Azure Requirements
 - Azure subscription with **Contributor** permissions
@@ -81,10 +82,12 @@ The lab deploys across three Azure scopes both manual and programatically:
 ## 🚀 Quick Start 
 
 
-### 1. Open a Powershell Prompt as Administrator and Install VS Code and Git
+### 1. Install Required Software
 ```powershell
 PS C:\Users\<currentuser> winget install code
 PS C:\Users\<currentuser> winget install Git.Git
+PS C:\Users\<currentuser> Install-Module Az.Accounts, Az.Profile, Az.Resources, Az.Storage, Az.Monitor, Az.OperationalInsights, Az.Compute, Az.Network -Scope CurrentUser -Force
+
 ```
 
 ### 2. Open VS Code Terminal Clone the Repo
@@ -93,7 +96,9 @@ PS C:\Users\<currentuser> winget install Git.Git
 code
 #VSCode opens
 Ctrl+`
-PS C:\Users\<currentuser>git clone https://github.com/purpleshellsecurity/adversary_lab.git
+PS C:\Users\<currentuser> mkdir projects
+PS C:\Users\<currentuser> cd projects
+PS C:\Users\<currentuser> git clone https://github.com/purpleshellsecurity/adversary_lab.git
 PS C:\Users\<currentusers> cd adversary_lab
 ```
 
@@ -196,44 +201,16 @@ Due to elevated permissions required, configure Entra ID logs manually:
 [Microsoft Graph Activity Logs](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/microsoftgraphactivitylogs)
 
 
-### 2. Enable Flow Logs - Powershell
-
-```powershell
-#Input with your deployed resource names
-$rg = "adversary_lab_rg_name"
-$vnet_name="adversary_lab_vnet_name"
-$wk="adversary_lab_net_insights"
-$storage_acc_name="flow_log_storage_account_name"
-$location_name="Locationofresources"
-$vnet_flow_log_name="adversary_lab_fl"
-$storageAccount_id="subscriptions/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/resourceGroups/adversary_lab_rg_name/providers/Microsoft.Storage/storageAccounts/flow_log_storage_accout_name"
-$vnet_id="/subscriptions/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/resourceGroups/adversary_lab_rg/providers/Microsoft.Network/virtualNetworks/adversarylab-vnet"
-$workspace_id="/subscriptions/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/resourceGroups/adversary_lab_rg/providers/Microsoft.OperationalInsights/workspaces/adversarylab-law"
-
-
-# Place the virtual network configuration into a variable.
-$vnet = Get-AzVirtualNetwork -Name $vnet_name -ResourceGroupName $rg
-
-# Place the storage account configuration into a variable.
-$storageAccount = Get-AzStorageAccount -Name $storage_acc_name -ResourceGroupName $rg
-
-# Create a traffic analytics workspace and place its configuration into a variable.
-$workspace = New-AzOperationalInsightsWorkspace -Name $storage_acc_name -ResourceGroupName $rg -Location $location_name
-
-# Create a VNet flow log. This assumes it was deployed in eastus.
-New-AzNetworkWatcherFlowLog -Enabled $true -Name $vnet_flow_log_name -NetworkWatcherName 'NetworkWatcher_eastus' -ResourceGroupName 'NetworkWatcherRG' -StorageId $storageAccount_id -TargetResourceId $vnet_id -FormatVersion 2 -EnableTrafficAnalytics $true -TrafficAnalyticsWorkspaceId $workspace_id -TrafficAnalyticsInterval 10
-```
-
-### Enable Flow Logs - Azure Portal
+### 2. Enable Flow Logs - Azure Portal
 
 ``` bash
    A storage account has been created and is ready for VNET flow logs:
    1. Navigate to Azure Portal > Network Watcher > Flow logs
    2. Create a new VNET flow log with the following configuration:
        - Target: Your Virtual Network" "Gray"
-       - Storage Account: $StorageAccountName" "Gray"
+       - Storage Account: $StorageAccountName"
        - Log Analytics: $WorkspaceName (optional for Traffic Analytics)"
-       - Format: JSON Version 2" "Gray"
+       - Format: JSON Version 2" "
  ```
 
 ### 2. Connect to VM
