@@ -1,4 +1,4 @@
-$domain = "<tenantname>.onmicrosoft.com" #Use Primary domain found here https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview
+$domain = "<tenantname>.onmicrosoft.com" #Use Primary domain found here https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview #note if you created the tenant with your email it will most likely be some form of your email address. 
 $userPrincipalName = "adversarylabdeployer@$domain"
 
 Write-Host "Creating user: $userPrincipalName"

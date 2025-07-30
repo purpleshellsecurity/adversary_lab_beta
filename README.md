@@ -337,7 +337,7 @@ The lab supports various security testing scenarios:
 ### Manual Cost Savings
 - Stop VM when not in use
 - Reduce Log Analytics retention if not needed
-- Delete resources when lab testing is complete
+- Adjust logging being sent to Log Analytics/Sentinel where possible. 
 
 ### Cost Estimation
 <br>
@@ -373,6 +373,9 @@ Typical monthly costs (East US region):
 - Azure RBAC for access control
 
 <br>
+
+## Resource Cleanup 
+- All the lab resoruces are contained in resource group that can be easily deleted via the portal. 
 
 ## 🤝 Contributing
 
